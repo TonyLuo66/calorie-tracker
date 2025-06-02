@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>食物趣 - 忘記密碼</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+    }
+    .forgot-box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 360px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .links {
+      text-align: center;
+      margin-top: 1em;
+    }
+    .links a {
+      text-decoration: none;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <div class="forgot-box">
+    <h1>找回密碼</h1>
+    <input type="text" id="inputHint" placeholder="請輸入您的密碼提示">
+    <button onclick="recoverPassword()">查詢密碼</button>
+    <div class="links">
+      <a href="login.html">返回登入頁</a>
+    </div>
+  </div>
+
+  <script>
+    function recoverPassword() {
+      const inputHint = document.getElementById("inputHint").value;
+      const storedHint = localStorage.getItem("accountHint");
+      const storedUser = localStorage.getItem("accountUsername");
+      const storedPass = localStorage.getItem("accountPassword");
+
+      if (inputHint === storedHint) {
+        alert(`您的帳號為：${storedUser}\n密碼為：${storedPass}`);
+      } else {
+        alert("密碼提示錯誤，請再試一次。");
+      }
+    }
+  </script>
+</body>
+</html>

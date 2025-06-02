@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>食物趣 - 註冊帳號</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+    }
+    .register-box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 360px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .links {
+      text-align: center;
+      margin-top: 1em;
+    }
+    .links a {
+      text-decoration: none;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-box">
+    <h1>註冊帳號</h1>
+    <input type="text" id="newUsername" placeholder="請輸入帳號">
+    <input type="password" id="newPassword" placeholder="請輸入密碼">
+    <input type="password" id="confirmPassword" placeholder="再次確認密碼">
+    <input type="text" id="recoveryHint" placeholder="請輸入密碼提示（忘記密碼用）">
+    <button onclick="createAccount()">建立帳號</button>
+    <div class="links">
+      <a href="login.html">返回登入頁</a>
+    </div>
+  </div>
+
+  <script>
+    function createAccount() {
+      const newUser = document.getElementById("newUsername").value;
+      const newPass = document.getElementById("newPassword").value;
+      const confirmPass = document.getElementById("confirmPassword").value;
+      const hint = document.getElementById("recoveryHint").value;
+
+      if (!newUser || !newPass || !confirmPass || !hint) {
+        alert("請填寫所有欄位");
+        return;
+      }
+      if (newPass !== confirmPass) {
+        alert("密碼不一致");
+        return;
+      }
+      localStorage.setItem("accountUsername", newUser);
+      localStorage.setItem("accountPassword", newPass);
+      localStorage.setItem("accountHint", hint);
+      alert("帳號註冊成功，請返回登入頁面");
+      window.close();
+    }
+  </script>
+</body>
+</html>

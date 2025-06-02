@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>食物趣 - 登入</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+    }
+    .login-box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 360px;
+    }
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1em;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 1.8em;
+    }
+    .title img {
+      height: 32px;
+      margin-left: 0.5em;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.6em;
+      margin: 0.5em 0;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .links {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9em;
+    }
+    .links a {
+      text-decoration: none;
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="title">
+      <h1>食物趣</h1>
+      <img src="https://cdn-icons-png.flaticon.com/512/1046/1046750.png" alt="logo">
+    </div>
+    <input type="text" id="username" placeholder="請輸入帳號">
+    <input type="password" id="password" placeholder="請輸入密碼">
+    <button onclick="login()">登入</button>
+    <div class="links">
+      <a href="forgot.html">忘記密碼</a>
+      <a href="create.html" target="_blank">創建帳號</a>
+    </div>
+  </div>
+
+  <script>
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+
+      const savedUser = localStorage.getItem("accountUsername");
+      const savedPass = localStorage.getItem("accountPassword");
+
+      if (user === savedUser && pass === savedPass) {
+        localStorage.setItem("currentUser", user);
+        window.location.href = "main.html";
+      } else {
+        alert("帳號或密碼錯誤");
+      }
+    }
+  </script>
+</body>
+</html>

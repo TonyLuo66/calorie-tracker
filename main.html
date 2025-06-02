@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日熱量記錄器</title>
+  
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 1em;
+      background: url('https://images.unsplash.com/photo-1546069901-eacef0df6022?auto=format&fit=crop&w=1950&q=50') no-repeat center center/cover;
+      background-attachment: fixed;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 1.5em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    input, select, button {
+      margin: 0.5em 0;
+      padding: 0.5em;
+      box-sizing: border-box;
+    }
+    .row {
+      display: flex;
+      gap: 1em;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .row .left {
+      flex: 1;
+    }
+    .row .right {
+      flex-shrink: 0;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+    .header h2 {
+      margin: 0;
+    }
+    .header button {
+      padding: 0.5em 1em;
+      width: auto;
+    }
+    button {
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+      background-color: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+    th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.75em;
+      text-align: center;
+    }
+    .total {
+      font-weight: bold;
+      margin-top: 1em;
+    }
+    #message, #deleteMsg, #exportMsg {
+      font-weight: bold;
+      margin-top: 1em;
+      text-align: center;
+      display: none;
+    }
+    #message { color: green; }
+    #deleteMsg { color: red; }
+    #exportMsg { color: #333; }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-bottom: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>🍽 每日熱量記錄器</h2>
+      <button onclick="logout()">登出</button>
+    </div>
+
+    <label>食物名稱：<input type="text" id="foodName" placeholder="例如：地瓜、雞胸肉" onblur="fetchCalories()"></label>
+    <div class="note">可輸入多種食物，請用頓號（、）分隔</div>
+    <label>熱量（Kcal）：<input type="number" id="calories" readonly style="background-color:#eee;"> Kcal</label>
+    <div class="note"><span style="display:inline-flex; align-items:center; gap:4px;">⚠️</span> ※ 系統會自動依照輸入的食物計算熱量，無需手動輸入（參考資料來源：Nutritionix API）</div>
+    <label>餐別：
+      <select id="meal">
+        <option value="早餐">早餐</option>
+        <option value="午餐">午餐</option>
+        <option value="晚餐">晚餐</option>
+        <option value="點心">點心</option>
+        <option value="其他">其他</option>
+      </select>
+    </label>
+
+    <button id="saveBtn" onclick="addEntry()">新增紀錄</button>
+    <button onclick="clearEntries()">清除所有紀錄</button>
+
+    <div class="row">
+      <div class="left total" id="totalCalories">總熱量：0 Kcal</div>
+      <div class="right"><button onclick="exportCSV()">匯出紀錄 CSV</button></div>
+    </div>
+
+    <input type="text" id="filterDate" placeholder="篩選日期（YYYY/MM/DD）" oninput="filterEntries()">
+
+    <div id="message">✅ 所有紀錄已清除</div>
+    <div id="deleteMsg">🗑️ 紀錄已刪除</div>
+    <div id="exportMsg">📂 已匯出 CSV</div>
+
+    <table id="entryTable">
+      <thead>
+        <tr>
+          <th>日期時間</th>
+          <th>食物</th>
+          <th>熱量</th>
+          <th>餐別</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    function logout() {
+      alert("您已登出。");
+      window.location.href = "login.html";
+    }
+
+    async function fetchCalories() {
+      const input = document.getElementById("foodName").value.trim();
+      if (!input) return;
+      const items = input.split("、").map(i => i.trim()).filter(Boolean);
+      let total = 0;
+      for (const item of items) {
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(item)}`);
+        const json = await res.json();
+        const eng = json[0][0][0];
+        const nutRes = await fetch("https://trackapi.nutritionix.com/v2/natural/nutrients", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-app-id": "8e898936",
+            "x-app-key": "226bda0bacff61cd478623317b1c0767"
+          },
+          body: JSON.stringify({ query: eng })
+        });
+        const nutJson = await nutRes.json();
+        if (nutJson.foods && nutJson.foods.length > 0) {
+          total += Math.round(nutJson.foods[0].nf_calories);
+        }
+      }
+      document.getElementById("calories").value = total;
+    }
+
+    function addEntry() {
+      const food = document.getElementById("foodName").value.trim();
+      const kcal = document.getElementById("calories").value;
+      const meal = document.getElementById("meal").value;
+      const time = new Date().toLocaleString();
+      if (!food || !kcal) return;
+
+      const table = document.querySelector("#entryTable tbody");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${time}</td>
+        <td>${food}</td>
+        <td>${kcal}</td>
+        <td>${meal}</td>
+        <td>
+          <button onclick="this.closest('tr').remove(); updateTotal();">刪除</button>
+        </td>
+      `;
+      table.appendChild(row);
+
+      updateTotal();
+      document.getElementById("foodName").value = "";
+      document.getElementById("calories").value = "";
+    }
+
+    function updateTotal() {
+      let total = 0;
+      document.querySelectorAll("#entryTable tbody tr").forEach(row => {
+        total += parseInt(row.children[2].textContent);
+      });
+      document.getElementById("totalCalories").textContent = `總熱量：${total} Kcal`;
+    }
+
+    function clearEntries() {
+      document.querySelector("#entryTable tbody").innerHTML = "";
+      updateTotal();
+    }
+
+    function exportCSV() {
+      let csv = "日期時間,食物,熱量,餐別
+";
+      document.querySelectorAll("#entryTable tbody tr").forEach(row => {
+        const cells = Array.from(row.children).slice(0, 4).map(td => td.textContent);
+        csv += cells.join(",") + "
+";
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = "calorie_records.csv";
+      link.click();
+    }
+
+    function filterEntries() {
+      const keyword = document.getElementById("filterDate").value.trim();
+      document.querySelectorAll("#entryTable tbody tr").forEach(row => {
+        row.style.display = row.children[0].textContent.startsWith(keyword) ? "" : "none";
+      });
+    }
+  </script>
+</body>
+</html>
+
+</html>
